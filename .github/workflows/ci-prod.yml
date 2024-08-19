@@ -24,7 +24,10 @@ jobs:
 
       - name: Remove old Docker image
         run: |
-          docker rmi ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest || true
+          IMAGE_ID=$(docker images -q ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest)
+          if [ -n "$IMAGE_ID" ]; then
+            docker rmi -f $IMAGE_ID
+          fi
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
