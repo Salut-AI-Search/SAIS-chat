@@ -3,5 +3,5 @@
 </script>
 
 <div>
-	<p>Salut! AI Search</p>
+	<p>Salut! AI Search test both deploys</p>
 </div>
