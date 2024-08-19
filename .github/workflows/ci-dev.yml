@@ -46,4 +46,7 @@ jobs:
             docker stop sveltekit-dev || true
             docker rm sveltekit-dev || true
             docker run -d --name sveltekit-dev -p 4174:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest
+            sleep 10
+            docker logs sveltekit-dev
             docker ps -a
+            curl -I http://localhost:4174
