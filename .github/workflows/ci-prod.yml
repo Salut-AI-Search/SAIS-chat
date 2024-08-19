@@ -46,3 +46,4 @@ jobs:
             docker stop sveltekit-prod || true
             docker rm sveltekit-prod || true
             docker run -d --name sveltekit-prod -p 4173:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest
+            docker ps -a
