@@ -1,4 +1,4 @@
-name: CI/CD for Dev
+name: Deploying the development branch
 
 on:
   push:
@@ -45,4 +45,4 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest
             docker stop sveltekit-dev || true
             docker rm sveltekit-dev || true
-            docker run -d --name sveltekit-dev -p 4173:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest
+            docker run -d --name sveltekit-dev -p 4174:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest

@@ -1,4 +1,4 @@
-name: CI/CD for Production
+name: Deploying the Production branch (hope nothing breaks)
 
 on:
   push:
