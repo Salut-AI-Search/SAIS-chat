@@ -18,7 +18,7 @@
 			</picture>
 		</span>
 
-		to your new<br />SvelteKit test
+		to your new<br />SvelteKit test1
 	</h1>
 
 	<h2>
