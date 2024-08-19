@@ -2,7 +2,6 @@
 	import '../app.css';
 </script>
 
-<div class="app">
-
+<div>
 	<p>Salut! AI Search</p>
 </div>
