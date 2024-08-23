@@ -4,5 +4,5 @@
 
 
 <div>
-	<p>Salut! AI Search<br/>desperately trying to deploy 1</p>
+	<p>Salut! AI Search<br/>Наконец то эта поебота деплоится господи</p>
 </div>
