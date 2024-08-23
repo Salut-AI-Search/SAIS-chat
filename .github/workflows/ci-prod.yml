@@ -56,4 +56,4 @@ jobs:
             docker volume prune -f
 
             # Run the new container
-            docker run -d --name sveltekit-prod -p 4174:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest
+            docker run -d --name sveltekit-prod -p 4173:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest
