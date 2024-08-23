@@ -1,4 +1,4 @@
-name: Deploying the Production branch (hope nothing breaks)
+name: CI/CD for prod
 
 on:
   push:
@@ -22,15 +22,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Remove old Docker image
-        run: |
-          docker rmi ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest || true
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./website
-          file: ./website/Dockerfile
+          context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest
 
@@ -46,7 +41,18 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Pull the latest image from Docker Hub
             docker pull ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest
+
+            # Stop and remove the old container if it exists
             docker stop sveltekit-prod || true
             docker rm sveltekit-prod || true
-            docker run -d --name sveltekit-prod -p 4173:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest
+
+            # Remove the old image to ensure the latest is used
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest || true
+
+            # Optional: Remove unused volumes
+            docker volume prune -f
+
+            # Run the new container
+            docker run -d --name sveltekit-prod -p 4174:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-prod:latest
