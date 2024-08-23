@@ -1,4 +1,4 @@
-name: Deploying the development branch
+name: CI/CD for Dev
 
 on:
   push:
@@ -22,24 +22,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Pull old Docker image
-        run: |
-          docker pull ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest || true
-
-      - name: List Docker images
-        run: |
-          docker images
-
-      - name: Remove old Docker image
-        run: |
-          IMAGE_ID=$(docker images -q ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest)
-          echo "Image ID: $IMAGE_ID"
-          if [ -n "$IMAGE_ID" ]; then
-            docker rmi -f $IMAGE_ID
-          else
-            echo "No image found to remove."
-          fi
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -60,7 +42,18 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Pull the latest image from Docker Hub
             docker pull ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest
+
+            # Stop and remove the old container if it exists
             docker stop sveltekit-dev || true
             docker rm sveltekit-dev || true
+
+            # Remove the old image to ensure the latest is used
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest || true
+
+            # Optional: Remove unused volumes
+            docker volume prune -f
+
+            # Run the new container
             docker run -d --name sveltekit-dev -p 4174:4173 ${{ secrets.DOCKER_USERNAME }}/sveltekit-dev:latest
