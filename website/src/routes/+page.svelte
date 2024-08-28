@@ -3,6 +3,6 @@
 </script>
 
 
-<div>
-	<p>Salut! AI Search<br/>Не работает...</p>
+<div class='app'>
+	<p>Salut! AI Search<br/>Раздеплой заработал. Приятно</p>
 </div>
