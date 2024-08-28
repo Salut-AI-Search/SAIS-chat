@@ -1,4 +1,4 @@
-name: CI/CD for Dev
+name: Deploying development build
 
 on:
   push:
