@@ -1,6 +1,6 @@
-# Salut! AI (salut_ai)
+# Salut! Chat (app)
 
-by Salut! Team
+A Quasar Project
 
 ## Install the dependencies
 ```bash
