@@ -34,7 +34,7 @@
               }
             "
           >
-            {{ chat.last_message.split('\n')[0].replace('Вопрос: ', '') }}
+            {{ chat.name }}
           </div>
         </template>
       </q-virtual-scroll>
@@ -116,6 +116,10 @@ import { ref, computed, onMounted, watch } from 'vue';
 
 import { debounce } from 'lodash';
 import { api } from 'src/boot/axios';
+import getChats from 'src/api/getChats';
+import { useChatStore } from 'src/stores/chatStore';
+
+const chatStore = useChatStore();
 
 const documentId = ref();
 
@@ -150,8 +154,7 @@ const sendMessage = async () => {
 
 const getChatHistory = async () => {
   console.log(selectedChat.value);
-  await api
-    .post('/get_messages_by_chat_id', { chat_id: selectedChat.value })
+  await getChats()
     .then((res) => {
       console.log(res.data);
       messages.value = res.data
@@ -194,19 +197,6 @@ const newChat = async () => {
       ];
       getChatHistory();
       // getChats();
-    })
-    .catch((e) => {
-      console.error(e);
-    });
-};
-
-const getChats = () => {
-  loadingChats.value = true;
-  api
-    .get('/get_chats')
-    .then((res) => {
-      chats.value = res.data;
-      loadingChats.value = false;
     })
     .catch((e) => {
       console.error(e);
@@ -266,6 +256,14 @@ function acceptSuggestion() {
   }
 }
 
+// watch(
+//   vectorStores,
+//   () => {
+//     console.log(vectorStores);
+//   },
+//   { deep: true }
+// );
+
 onMounted(() => {
   const searchParams = new URLSearchParams(window.location.search);
 
@@ -274,7 +272,9 @@ onMounted(() => {
       documentId.value = value;
     }
   });
-  getChats();
+  getChats().then((res) => {
+    chats.value = res;
+  });
 });
 </script>
 
