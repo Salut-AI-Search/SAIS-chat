@@ -1,0 +1,523 @@
+{
+  "openapi": "3.0.2",
+  "info": { "title": "FastAPI", "version": "0.1.0" },
+  "paths": {
+    "/register": {
+      "post": {
+        "summary": "Register User",
+        "operationId": "register_user_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserRegistration" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Token" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token": {
+      "post": {
+        "summary": "Login For Access Token",
+        "operationId": "login_for_access_token_token_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_for_access_token_token_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Token" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "summary": "Me",
+        "operationId": "me_me_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Token", "type": "string" },
+            "name": "token",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{username}": {
+      "put": {
+        "summary": "Update User",
+        "operationId": "update_user_users__username__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Username", "type": "string" },
+            "name": "username",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserUpdate" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/protected": {
+      "get": {
+        "summary": "Protected Route",
+        "operationId": "protected_route_protected_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/upload_pdf/": {
+      "post": {
+        "summary": "Upload Pdf",
+        "operationId": "upload_pdf_upload_pdf__post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_pdf_upload_pdf__post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete_pdf/{filename}": {
+      "delete": {
+        "summary": "Delete Pdf",
+        "operationId": "delete_pdf_delete_pdf__filename__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Filename", "type": "string" },
+            "name": "filename",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vectorStorageFromFiles": {
+      "post": {
+        "summary": "Get Vectorstore From Files",
+        "operationId": "get_vectorstore_from_files_vectorStorageFromFiles_post",
+        "parameters": [
+          {
+            "description": "Name of the vector storage",
+            "required": true,
+            "schema": {
+              "title": "Vec Name",
+              "type": "string",
+              "description": "Name of the vector storage"
+            },
+            "name": "vec_name",
+            "in": "query"
+          },
+          {
+            "description": "Chunk size for text splitting",
+            "required": false,
+            "schema": {
+              "title": "Chunk Size",
+              "type": "integer",
+              "description": "Chunk size for text splitting",
+              "default": 2048
+            },
+            "name": "chunk_size",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Is Public",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "is_public",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_get_vectorstore_from_files_vectorStorageFromFiles_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/getVectorStoresList": {
+      "get": {
+        "summary": "Getvectorstoreslist",
+        "operationId": "getVectorStoresList_getVectorStoresList_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/get_response": {
+      "post": {
+        "summary": "Get Response",
+        "operationId": "get_response_get_response_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/GetAnswerRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/task_status/{task_id}": {
+      "get": {
+        "summary": "Get Task Status",
+        "operationId": "get_task_status_task_status__task_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Task Id", "type": "string" },
+            "name": "task_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/create_chat": {
+      "post": {
+        "summary": "Create Chat",
+        "operationId": "create_chat_create_chat_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Vec Name", "type": "string" },
+            "name": "vec_name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/messages": {
+      "get": {
+        "summary": "Get Messages By User",
+        "operationId": "get_messages_by_user_messages_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": { "title": "Chat Id", "type": "integer" },
+            "name": "chat_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/chats": {
+      "get": {
+        "summary": "Get Chats By User",
+        "operationId": "get_chats_by_user_chats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_get_vectorstore_from_files_vectorStorageFromFiles_post": {
+        "title": "Body_get_vectorstore_from_files_vectorStorageFromFiles_post",
+        "required": ["files"],
+        "type": "object",
+        "properties": {
+          "files": {
+            "title": "Files",
+            "type": "array",
+            "items": { "type": "string", "format": "binary" }
+          }
+        }
+      },
+      "Body_login_for_access_token_token_post": {
+        "title": "Body_login_for_access_token_token_post",
+        "required": ["username", "password"],
+        "type": "object",
+        "properties": {
+          "grant_type": {
+            "title": "Grant Type",
+            "pattern": "password",
+            "type": "string"
+          },
+          "username": { "title": "Username", "type": "string" },
+          "password": { "title": "Password", "type": "string" },
+          "scope": { "title": "Scope", "type": "string", "default": "" },
+          "client_id": { "title": "Client Id", "type": "string" },
+          "client_secret": { "title": "Client Secret", "type": "string" }
+        }
+      },
+      "Body_upload_pdf_upload_pdf__post": {
+        "title": "Body_upload_pdf_upload_pdf__post",
+        "required": ["file"],
+        "type": "object",
+        "properties": {
+          "file": { "title": "File", "type": "string", "format": "binary" }
+        }
+      },
+      "GetAnswerRequest": {
+        "title": "GetAnswerRequest",
+        "required": ["user_input", "chat_id"],
+        "type": "object",
+        "properties": {
+          "user_input": { "title": "User Input", "type": "string" },
+          "chat_id": { "title": "Chat Id", "type": "integer" }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ValidationError" }
+          }
+        }
+      },
+      "Token": {
+        "title": "Token",
+        "required": ["access_token", "token_type"],
+        "type": "object",
+        "properties": {
+          "access_token": { "title": "Access Token", "type": "string" },
+          "token_type": { "title": "Token Type", "type": "string" }
+        }
+      },
+      "UserRegistration": {
+        "title": "UserRegistration",
+        "required": ["username", "email", "password"],
+        "type": "object",
+        "properties": {
+          "username": { "title": "Username", "type": "string" },
+          "email": { "title": "Email", "type": "string" },
+          "password": { "title": "Password", "type": "string" }
+        }
+      },
+      "UserUpdate": {
+        "title": "UserUpdate",
+        "type": "object",
+        "properties": {
+          "username": { "title": "Username", "type": "string" },
+          "password": { "title": "Password", "type": "string" },
+          "email": { "title": "Email", "type": "string" }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": ["loc", "msg", "type"],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] }
+          },
+          "msg": { "title": "Message", "type": "string" },
+          "type": { "title": "Error Type", "type": "string" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": { "password": { "scopes": {}, "tokenUrl": "token" } }
+      }
+    }
+  }
+}
