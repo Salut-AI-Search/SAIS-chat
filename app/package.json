@@ -10,12 +10,14 @@
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build"
+    "build": "quasar build",
+    "codegen": "npx @openapitools/openapi-generator-cli generate -i .\\src\\assets\\swagger.codegen.json -g typescript-axios -o .\\src\\api\\"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
     "axios": "^1.2.1",
     "js-cookie": "^3.0.5",
+    "openapi": "^1.0.1",
     "pinia": "^2.0.11",
     "quasar": "^2.16.0",
     "vue": "^3.4.18",
