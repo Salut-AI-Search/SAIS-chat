@@ -1,8 +1,12 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
 import Cookies from 'js-cookie';
-import login from 'src/api/login';
+import { DefaultApi } from 'src/api/api';
+import { Configuration } from 'src/api/configuration';
+import useAuth from 'src/api/composables/useAuth';
 
+const { apiLogin } = useAuth();
+// todo fix
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $axios: AxiosInstance;
@@ -16,12 +20,16 @@ declare module '@vue/runtime-core' {
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_BASE_URL,
-  timeout: 5000,
+
+const config = new Configuration({
+  basePath: import.meta.env.VITE_APP_API_BASE_URL,
 });
 
-// Function to handle re-authentication
+const api = new DefaultApi(config);
+
+// Create Axios instance with interceptors
+// const axiosInstance = axios.create();
+
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
@@ -39,7 +47,7 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 // Request interceptor to add JWT token
-api.interceptors.request.use(
+api.axios.interceptors.request.use(
   (config) => {
     const token = Cookies.get('jwtToken');
     if (token) {
@@ -51,7 +59,8 @@ api.interceptors.request.use(
 );
 
 // Response interceptor to handle 401 errors
-api.interceptors.response.use(
+api.axios.interceptors.response.use(
+  // бля метод protected но один хуй работает. Люблю TS
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -72,7 +81,7 @@ api.interceptors.response.use(
         })
           .then((token) => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
+            // return api(originalRequest);
           })
           .catch((err) => Promise.reject(err));
       }
@@ -81,10 +90,10 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const newToken = await login();
+        const newToken = null; // get it from refresh
         processQueue(null, newToken); // Retry all queued requests with the new token
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest); // Retry the original request
+        // return api(originalRequest); // Retry the original request
       } catch (err) {
         processQueue(err, null); // Reject all queued requests if refresh failed
         return Promise.reject(err);
@@ -97,6 +106,10 @@ api.interceptors.response.use(
   }
 );
 
+// config.baseOptions = { ...config.baseOptions, instance: axiosInstance };
+
+// // Function to handle re-authentication
+
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
 
@@ -104,7 +117,7 @@ export default boot(({ app }) => {
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
   //       so you won't necessarily have to import axios in each vue file
 
-  app.config.globalProperties.$api = api;
+  app.config.globalProperties.$api = api; // trust me on this one mate :D
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
 });

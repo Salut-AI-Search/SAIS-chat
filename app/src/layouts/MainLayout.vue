@@ -9,13 +9,18 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import Cookies from 'js-cookie';
-import login from 'src/api/login';
-import getVectorStores from 'src/api/getVectorStores';
+// import getVectorStores from 'src/api/getVectorStores';
+import useVecStore from 'src/api/composables/useVecStore';
+import useAuth from 'src/api/composables/useAuth';
+
+const { apiLogin } = useAuth();
+const { apiGetVecStoreList } = useVecStore();
 
 onMounted(() => {
-  getVectorStores();
+  apiGetVecStoreList();
   if (!Cookies.get('jwtToken') || Cookies.get('jwtToken') == 'undefined') {
-    login();
+    // login();
+    apiLogin('daniil', 'daniil');
   }
 });
 </script>

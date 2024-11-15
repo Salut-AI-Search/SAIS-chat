@@ -8,31 +8,39 @@
       :breakpoint="700"
       class="text-white bg-black"
     >
+      <div
+        class="popup"
+        ref="popup"
+        :style="{
+          left: `${popupPosition.x}px`,
+          top: `${popupPosition.y}px`,
+          display: isPopupVisible ? 'block' : 'none',
+        }"
+      >
+        <q-virtual-scroll
+          :items="chatStore.vectorStores"
+          style="height: 300px; width: 200px"
+        >
+          <template v-slot="{ item }">
+            <div class="item" @click="handlerCreateChat(item)">{{ item }}</div>
+          </template>
+        </q-virtual-scroll>
+      </div>
       <q-virtual-scroll
         v-if="!loadingChats"
         :items="chats"
         class="chats-container"
       >
         <template v-slot:before
-          ><div
-            class="create-chat"
-            @click.stop="messages.length == 0 ? () => {} : newChat()"
-          >
+          ><div class="create-chat" @click="togglePopup">
             <p class="create-plus">+</p>
             <p class="create-text">Новый чат</p>
-          </div></template
-        >
+          </div>
+        </template>
         <template v-slot="{ item: chat }">
           <div
             class="chat ellipsis-2-lines q-pa-md"
-            @click="
-              () => {
-                selectedChat = chat.chat_id;
-                messages = [];
-                userInput = '';
-                getChatHistory();
-              }
-            "
+            @click="handlerSelectChat(chat)"
           >
             {{ chat.name }}
           </div>
@@ -65,7 +73,7 @@
             <div
               :class="message.from == 'user' ? 'message-user' : 'message-bot'"
             >
-              <h1 v-if="message.from == 'bot'">Ответ SILA.Bot:</h1>
+              <h1 v-if="message.from == 'bot'">Ответ Salut!:</h1>
               {{ message.text }}
             </div>
           </q-virtual-scroll>
@@ -86,6 +94,8 @@
           rounded
           autogrow
           ref="inputRef"
+          color="white"
+          label-color="white"
           @keydown.tab.prevent="acceptSuggestion"
           @keydown.enter.prevent="sendMessage"
           @update:model-value="onInput"
@@ -112,173 +122,128 @@
 
 <script setup lang="ts">
 // @ts-nocheck
-import { ref, computed, onMounted, watch } from 'vue';
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  onUnmounted,
+  useTemplateRef,
+} from 'vue';
 
-import { debounce } from 'lodash';
 import { api } from 'src/boot/axios';
-import getChats from 'src/api/getChats';
 import { useChatStore } from 'src/stores/chatStore';
+import useChats from 'src/api/composables/useChats';
+import moment from 'moment';
+import { useHint } from 'src/composables/useHint';
+import { usePopup } from 'src/composables/usePopup';
 
-const chatStore = useChatStore();
+const { apiGetChats, apiCreateChat, apiGetMessages, apiSendMessage } =
+  useChats();
 
-const documentId = ref();
-
-const showChats = ref(true);
+const inputRef = useTemplateRef('inputRef');
 const userInput = ref('');
 
-const messages = ref([]);
+const { onInput, acceptSuggestion } = useHint(userInput);
 
+const popup = useTemplateRef('popup');
+
+const { isPopupVisible, popupPosition, togglePopup } = usePopup(popup);
+
+const chatStore = useChatStore();
+const selectedVecName = ref();
+const selectedChat = ref({});
+
+const showChats = ref(true);
+
+const messages = ref([]);
 const chats = ref([]);
-const selectedChat = ref(-1);
+
 const loadingResponse = ref(false);
 const loadingChats = ref(false);
+
+const handlerSelectChat = (chat) => {
+  selectedChat.value = chat;
+  messages.value = [];
+  userInput.value = '';
+  getChatHistory();
+};
+
+const handlerCreateChat = (vecName) => {
+  chats.value.unshift({ id: -1, name: 'Новый чат' });
+  selectedVecName.value = vecName;
+  handlerSelectChat({ id: -1, name: 'Новый чат' });
+  isPopupVisible.value = false;
+};
 
 const sendMessage = async () => {
   messages.value.push({ text: userInput.value, from: 'user' });
   loadingResponse.value = true;
-  if (selectedChat.value == -1) {
-    await newChat();
-  }
-  api
-    .post('/get_answer', {
-      query: userInput.value,
-      chat_id: selectedChat.value,
-      user_id: '1',
-    })
-    .then((res) => {
-      loadingResponse.value = false;
-      messages.value.push({ text: res.data.answer, from: 'bot' });
-      userInput.value = '';
+  let chat_id;
+  if (selectedChat.value.id == -1) {
+    await apiCreateChat(selectedVecName.value).then((res) => {
+      chat_id = res.data.chat_id;
+      chats.value[0].id = chat_id;
     });
+  } else {
+    chat_id = selectedChat.value.id;
+  }
+
+  await apiSendMessage({ user_input: userInput.value, chat_id }).then((res) => {
+    loadingResponse.value = false;
+    messages.value.push({
+      text: res.data,
+      created_at: moment(),
+      from: 'bot',
+    });
+    chats.value[0].name = userInput.value;
+    userInput.value = '';
+  });
 };
 
 const getChatHistory = async () => {
-  console.log(selectedChat.value);
-  await getChats()
+  console.log('selected a chat', selectedChat.value);
+  await apiGetMessages(selectedChat.value.id)
     .then((res) => {
       console.log(res.data);
-      messages.value = res.data
-        .toReversed()
-        .map(({ message }) => {
-          if (message.includes('Чат создан')) {
-            return [{ from: 'user', text: message }];
-          } else {
-            const arr = message.split('\nОтвет: ');
-            const que = arr[0].replace('Вопрос: ', '');
-            const ans = arr[1];
-            return [
-              { from: 'user', text: que },
-              { from: 'bot', text: ans },
-            ];
-          }
-        })
-        .flat(1);
+      messages.value = res.data.map(({ to_user_id, text, created_at }) => {
+        return {
+          from: to_user_id ? 'bot' : 'user',
+          text,
+          created_at: moment(created_at),
+        };
+      });
     })
     .catch((e) => {
       console.error(e);
     });
 };
 
-const newChat = async () => {
-  await api
-    .post('/create_chat', {
-      user_id: '1',
-      document_id: documentId.value.toString(),
-    })
-    .then((res) => {
-      console.log(res.data);
-      selectedChat.value = res.data['chat_id'];
-      chats.value = [
-        {
-          chat_id: res.data['chat_id'],
-          last_message: 'Новый чат',
-        },
-        ...chats.value,
-      ];
-      getChatHistory();
-      // getChats();
-    })
-    .catch((e) => {
-      console.error(e);
-    });
+const getChats = async () => {
+  await apiGetChats().then((res) => {
+    chats.value = res.reverse();
+  });
 };
-
-const inputRef = ref(null);
-
-const debounceduserInput = ref('');
-const suggestion = ref('');
-const abortController = ref(null);
-
-const debouncedUpdateuserInput = debounce(() => {
-  debounceduserInput.value = userInput.value;
-  console.log(debounceduserInput.value);
-});
-
-function onInput() {
-  console.log('allo');
-  debouncedUpdateuserInput();
-}
-
-watch(debounceduserInput, async (newValue) => {
-  if (abortController.value) {
-    abortController.value.abort();
-  }
-
-  abortController.value = new AbortController();
-  const signal = abortController.value.signal;
-
-  try {
-    const result = await getSuggestion(newValue, signal);
-    suggestion.value = result;
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      console.log('Previous request was cancelled.');
-    } else {
-      console.error('Error fetching suggestion:', error);
-    }
-    suggestion.value = '';
-  }
-});
-
-async function getSuggestion(inputText, signal) {
-  // to be finished
-  return '';
-}
-
-const suggestedText = computed(() => {
-  return suggestion.value;
-});
-
-function acceptSuggestion() {
-  if (suggestedText.value) {
-    userInput.value += suggestion.value;
-    suggestion.value = '';
-  }
-}
-
-// watch(
-//   vectorStores,
-//   () => {
-//     console.log(vectorStores);
-//   },
-//   { deep: true }
-// );
 
 onMounted(() => {
-  const searchParams = new URLSearchParams(window.location.search);
-
-  searchParams.forEach((value, key) => {
-    if (key == 'documentId') {
-      documentId.value = value;
-    }
-  });
-  getChats().then((res) => {
-    chats.value = res;
-  });
+  getChats();
 });
 </script>
 
 <style lang="scss" scoped>
+.popup {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  z-index: 1000;
+  padding: 16px;
+
+  .item {
+    color: black;
+  }
+}
 .chats-container {
   padding-top: 20px;
   padding-left: 5%;
@@ -349,6 +314,7 @@ onMounted(() => {
   .message-user,
   .message-bot {
     margin-bottom: 30px;
+    color: white;
   }
 
   .message-user {
@@ -371,6 +337,7 @@ onMounted(() => {
 :global(.text-area) {
   padding: 0;
   margin-left: 20px;
+  color: white;
 }
 .user-input {
   width: 75%;

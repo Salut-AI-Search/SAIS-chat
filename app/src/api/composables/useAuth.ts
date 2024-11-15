@@ -1,12 +1,14 @@
 import { UserRegistration } from '../api';
-import useApi from './useApi';
+import { api } from 'src/boot/axios';
+import Cookies from 'js-cookie';
 const useAuth = () => {
-  const api = useApi();
   const apiRegister = async (params: UserRegistration) => {
     return await api.registerUserRegisterPost(params);
   };
   const apiLogin = async (username: string, password: string) => {
-    return await api.loginForAccessTokenTokenPost(username, password);
+    await api.loginForAccessTokenTokenPost(username, password).then((res) => {
+      Cookies.set('jwtToken', res.data.access_token);
+    });
   };
   return { apiRegister, apiLogin };
 };
