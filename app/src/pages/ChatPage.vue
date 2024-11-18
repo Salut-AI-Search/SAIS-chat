@@ -310,6 +310,7 @@ onMounted(() => {
   font-size: 20px;
   padding-bottom: 100px;
   max-height: 100vh;
+  width: 100%;
 
   .message-user,
   .message-bot {

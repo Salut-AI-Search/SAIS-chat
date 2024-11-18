@@ -3,10 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 import Cookies from 'js-cookie';
 import { DefaultApi } from 'src/api/api';
 import { Configuration } from 'src/api/configuration';
-import useAuth from 'src/api/composables/useAuth';
 
-const { apiLogin } = useAuth();
-// todo fix
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $axios: AxiosInstance;
@@ -27,25 +24,6 @@ const config = new Configuration({
 
 const api = new DefaultApi(config);
 
-// Create Axios instance with interceptors
-// const axiosInstance = axios.create();
-
-let isRefreshing = false;
-let failedQueue: any[] = [];
-
-// Helper to process failed requests
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (token) {
-      prom.resolve(token);
-    } else {
-      prom.reject(error);
-    }
-  });
-
-  failedQueue = [];
-};
-
 // Request interceptor to add JWT token
 api.axios.interceptors.request.use(
   (config) => {
@@ -63,43 +41,9 @@ api.axios.interceptors.response.use(
   // бля метод protected но один хуй работает. Люблю TS
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    // If we receive a 401 error, try to re-authenticate
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      !originalRequest._retry
-    ) {
-      // Prevent infinite loop by marking the request as retried
-      originalRequest._retry = true;
-
-      // If another request is already refreshing the token, queue this one
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            // return api(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
-      // Set refreshing state to true to avoid multiple refresh calls
-      isRefreshing = true;
-
-      try {
-        const newToken = null; // get it from refresh
-        processQueue(null, newToken); // Retry all queued requests with the new token
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        // return api(originalRequest); // Retry the original request
-      } catch (err) {
-        processQueue(err, null); // Reject all queued requests if refresh failed
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
+    if (error.response && error.response.status === 401) {
+      Cookies.remove('jwtToken');
+      window.location.replace('/login'); // через useRouter не работает :)
     }
 
     return Promise.reject(error);
