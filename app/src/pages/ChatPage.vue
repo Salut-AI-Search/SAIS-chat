@@ -1,12 +1,12 @@
 <template>
-  <q-layout style="background-color: #171719">
+  <q-layout class="body">
     <q-drawer
       v-model="showChats"
       side="left"
       show-if-above
-      :width="350"
       :breakpoint="700"
-      class="text-white bg-black"
+      width="400"
+      class="drawer text-white"
     >
       <div
         class="popup"
@@ -33,16 +33,12 @@
       >
         <template v-slot:before
           ><div class="create-chat" @click="togglePopup">
-            <p class="create-plus">+</p>
             <p class="create-text">Новый чат</p>
           </div>
         </template>
         <template v-slot="{ item: chat }">
-          <div
-            class="chat ellipsis-2-lines q-pa-md"
-            @click="handlerSelectChat(chat)"
-          >
-            {{ chat.name }}
+          <div class="chat ellipsis-1-line" @click="handlerSelectChat(chat)">
+            <p>{{ chat.name }}</p>
           </div>
         </template>
       </q-virtual-scroll>
@@ -60,6 +56,7 @@
             dense
             color="white"
             :icon="showChats ? 'chevron_left' : 'chevron_right'"
+            size="20px"
             @click="showChats = !showChats"
           />
         </div>
@@ -73,7 +70,6 @@
             <div
               :class="message.from == 'user' ? 'message-user' : 'message-bot'"
             >
-              <h1 v-if="message.from == 'bot'">Ответ Salut!:</h1>
               {{ message.text }}
             </div>
           </q-virtual-scroll>
@@ -90,7 +86,7 @@
           v-model="userInput"
           class="user-input absolute-bottom q-mb-lg"
           input-class="text-area"
-          outlined
+          borderless
           rounded
           autogrow
           ref="inputRef"
@@ -105,14 +101,7 @@
               {{ suggestedText }}
             </span>
             <!-- <q-btn round flat class="btn" icon="attach_file" /> -->
-            <q-btn
-              round
-              flat
-              class="btn"
-              icon="send"
-              color="white"
-              @click="sendMessage"
-            />
+            <q-btn round flat class="btn" icon="send" @click="sendMessage" />
           </template>
         </q-input>
       </q-page>
@@ -231,6 +220,9 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.body {
+  background-color: #0d0312;
+}
 .popup {
   position: absolute;
   background-color: white;
@@ -244,94 +236,116 @@ onMounted(() => {
     color: black;
   }
 }
+:global(.q-drawer) {
+  background-color: #15021e;
+  border-top-right-radius: 35px;
+  border-bottom-right-radius: 35px;
+  border-top: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  background: linear-gradient(#15021e, #15021e) padding-box,
+    linear-gradient(to bottom, #4000ff, #ff8800) border-box;
+  direction: rtl;
+}
+
 .chats-container {
   padding-top: 20px;
-  padding-left: 5%;
-  padding-right: 5%;
   max-height: 100vh;
+  direction: ltr;
 
   // background-color: #28282b;
-  height: 100vh;
+  height: calc(100vh - 6px);
 
   .create-chat {
-    background-color: #575757;
+    background-color: #20103a;
     cursor: pointer;
     user-select: none;
-    border-radius: 14px;
-    display: flex;
-    flex-direction: row;
-    margin-bottom: 20px;
-
-    .create-plus {
-      height: 47px;
-      width: 28px;
-      margin: 0;
-      font-size: 25px;
-      line-height: 47px;
-      margin-left: 15px;
-      font-weight: 600;
-    }
+    border-radius: 24px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
 
     .create-text {
       margin: 0;
-      padding-top: 10px;
-      padding-bottom: 10px;
-      font-size: 18px;
+      padding-top: 18px;
+      padding-bottom: 18px;
+      font-size: 20px;
       text-align: center;
+      font-weight: bold;
     }
   }
 
   .create-chat:hover {
-    background-color: #494949;
+    background-color: #331957;
   }
 
   .chat {
-    height: 72px;
+    height: 70px;
     cursor: pointer;
     white-space: wrap;
     overflow: hidden;
-    font-size: 18px;
-    line-height: 24px;
     user-select: none;
+    border-top: 1px solid transparent;
+    background: linear-gradient(#15021e, #15021e) padding-box,
+      linear-gradient(
+          to right,
+          transparent,
+          rgba(255, 255, 255, 0.6),
+          transparent
+        )
+        border-box;
+
+    p {
+      margin: none;
+      font-size: 16px;
+      line-height: 24px;
+      padding-top: 23px;
+      padding-bottom: 23px;
+      padding-left: 10%;
+    }
   }
 
   .chat:hover {
-    background-color: #614e4e;
+    background: linear-gradient(#280438, #280438) padding-box,
+      linear-gradient(
+          to right,
+          transparent,
+          rgba(255, 255, 255, 0.6),
+          transparent
+        )
+        border-box;
   }
 }
 
 .message-container {
   position: absolute;
-  top: 0;
+  top: 166px;
   left: 0;
-  padding-top: 50px;
-  padding-left: 10%;
-  padding-right: 10%;
+  padding-left: 16%;
+  padding-right: 16%;
   font-size: 20px;
   padding-bottom: 100px;
-  max-height: 100vh;
+  height: calc(100vh - 166px);
   width: 100%;
 
   .message-user,
   .message-bot {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     color: white;
   }
 
   .message-user {
-    font-weight: 100;
-    letter-spacing: 1px;
+    font-weight: 300;
+    color: #c0c0c0;
+    letter-spacing: -0.8px;
+    font-size: 20px;
   }
 
   .message-bot {
-    h1 {
-      font-size: 24px;
-      line-height: 36px;
-    }
-    font-weight: 600;
-    p {
-      margin: 0;
-    }
+    font-weight: bold;
+    font-size: 24px;
   }
 }
 
@@ -344,12 +358,16 @@ onMounted(() => {
   width: 75%;
   margin-left: auto;
   margin-right: auto;
-  background-color: #303133;
+  border: 2px solid transparent;
+  background: linear-gradient(#15021e, #15021e) padding-box,
+    linear-gradient(0.4turn, #4000ff, #ff8800) border-box;
   border-radius: 30px;
 
   .btn {
     width: 20px;
     height: 20px;
+    margin-right: 10px;
+    color: #bbbbbb;
   }
 }
 
@@ -362,8 +380,8 @@ onMounted(() => {
 }
 
 .drawer-btn {
-  width: 30px;
-  height: 30px;
+  width: 50px;
+  height: 50px;
 }
 
 .no-chat-title {
