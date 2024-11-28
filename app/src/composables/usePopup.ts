@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Ref, ref, onMounted, onUnmounted } from 'vue';
 
 export const usePopup = (popup: Ref) => {

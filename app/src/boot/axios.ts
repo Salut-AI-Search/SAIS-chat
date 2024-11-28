@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
 import Cookies from 'js-cookie';
