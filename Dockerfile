@@ -4,11 +4,11 @@ FROM node:22 AS builder
 WORKDIR /app
 
 # Install dependencies
-COPY package.json package-lock.json ./
+COPY app/package.json app/package-lock.json ./
 RUN npm ci
 
 # Copy source files and build the app
-COPY . .
+COPY app ./
 RUN npm run build
 
 # Stage 2: Serve with Caddy
