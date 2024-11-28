@@ -4,12 +4,12 @@ FROM node:22 AS builder
 WORKDIR /app
 
 # Install dependencies
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Copy source files and build the app
 COPY . .
-RUN yarn build
+RUN npm run build
 
 # Stage 2: Serve with Caddy
 FROM caddy:2.7.4-alpine
