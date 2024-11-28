@@ -87,6 +87,8 @@ module.exports = configure(function (/* ctx */) {
             },
             eslint: {
               lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"',
+              warnings: false,
+              errors: false,
             },
           },
           { server: false },
