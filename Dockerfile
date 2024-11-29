@@ -11,14 +11,3 @@ RUN npm ci
 COPY app ./
 ENV CI=false
 RUN npm run build || true
-
-# Stage 2: Serve with Caddy
-FROM caddy:2.7.4-alpine
-
-# Copy the built app to Caddy's default root
-COPY --from=builder /app/dist/spa /srv
-
-# Configure Caddy
-COPY Caddyfile /etc/caddy/Caddyfile
-
-EXPOSE 80 443
