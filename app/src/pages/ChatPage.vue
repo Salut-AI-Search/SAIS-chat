@@ -140,6 +140,7 @@ const popup = useTemplateRef('popup');
 const { isPopupVisible, popupPosition, togglePopup } = usePopup(popup);
 
 const chatStore = useChatStore();
+
 const selectedVecName = ref();
 const selectedChat = ref({});
 
@@ -166,28 +167,34 @@ const handlerCreateChat = (vecName) => {
 };
 
 const sendMessage = async () => {
-  messages.value.push({ text: userInput.value, from: 'user' });
-  loadingResponse.value = true;
-  let chat_id;
-  if (selectedChat.value.id == -1) {
-    await apiCreateChat(selectedVecName.value).then((res) => {
-      chat_id = res.data.chat_id;
-      chats.value[0].id = chat_id;
-    });
-  } else {
-    chat_id = selectedChat.value.id;
-  }
+  if (userInput.value != '') {
+    messages.value.push({ text: userInput.value, from: 'user' });
+    loadingResponse.value = true;
+    let chat_id;
+    if (selectedChat.value.id == -1) {
+      await apiCreateChat(selectedVecName.value).then((res) => {
+        chat_id = res.data.chat_id;
+        chats.value[0].id = chat_id;
+      });
+    } else {
+      chat_id = selectedChat.value.id;
+    }
 
-  await apiSendMessage({ user_input: userInput.value, chat_id }).then((res) => {
-    loadingResponse.value = false;
-    messages.value.push({
-      text: res.data,
-      created_at: moment(),
-      from: 'bot',
-    });
-    chats.value[0].name = userInput.value;
+    const user_input = userInput.value;
     userInput.value = '';
-  });
+
+    await apiSendMessage({ user_input, chat_id }).then((res) => {
+      loadingResponse.value = false;
+      messages.value.push({
+        text: res.data,
+        created_at: moment(),
+        from: 'bot',
+      });
+      getChats().then((res) => {
+        chats.value[0].name = res.at(-1).name;
+      });
+    });
+  }
 };
 
 const getChatHistory = async () => {
@@ -221,7 +228,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .body {
-  background-color: #0d0312;
+  background-color: #0f0f15;
 }
 .popup {
   position: absolute;
@@ -237,14 +244,14 @@ onMounted(() => {
   }
 }
 :global(.q-drawer) {
-  background-color: #15021e;
+  background-color: #13131d;
   border-top-right-radius: 35px;
   border-bottom-right-radius: 35px;
   border-top: 3px solid transparent;
   border-right: 3px solid transparent;
   border-bottom: 3px solid transparent;
-  background: linear-gradient(#15021e, #15021e) padding-box,
-    linear-gradient(to bottom, #4000ff, #ff8800) border-box;
+  background: linear-gradient(#13131d, #13131d) padding-box,
+    linear-gradient(to bottom, #f97794, #623aa2, #3800e1) border-box;
   direction: rtl;
 }
 
@@ -257,7 +264,7 @@ onMounted(() => {
   height: calc(100vh - 6px);
 
   .create-chat {
-    background-color: #20103a;
+    background-color: #31363f;
     cursor: pointer;
     user-select: none;
     border-radius: 24px;
@@ -278,7 +285,7 @@ onMounted(() => {
   }
 
   .create-chat:hover {
-    background-color: #331957;
+    background-color: #575757;
   }
 
   .chat {
@@ -288,7 +295,7 @@ onMounted(() => {
     overflow: hidden;
     user-select: none;
     border-top: 1px solid transparent;
-    background: linear-gradient(#15021e, #15021e) padding-box,
+    background: linear-gradient(#13131d, #13131d) padding-box,
       linear-gradient(
           to right,
           transparent,
@@ -308,7 +315,7 @@ onMounted(() => {
   }
 
   .chat:hover {
-    background: linear-gradient(#280438, #280438) padding-box,
+    background: linear-gradient(#252538, #252538) padding-box,
       linear-gradient(
           to right,
           transparent,
@@ -321,13 +328,14 @@ onMounted(() => {
 
 .message-container {
   position: absolute;
-  top: 166px;
+  top: 0px;
+  padding-top: 166px;
   left: 0;
   padding-left: 16%;
   padding-right: 16%;
   font-size: 20px;
   padding-bottom: 100px;
-  height: calc(100vh - 166px);
+  height: calc(100vh - 40px);
   width: 100%;
 
   .message-user,
@@ -359,8 +367,8 @@ onMounted(() => {
   margin-left: auto;
   margin-right: auto;
   border: 2px solid transparent;
-  background: linear-gradient(#15021e, #15021e) padding-box,
-    linear-gradient(0.4turn, #4000ff, #ff8800) border-box;
+  background: linear-gradient(#13131d, #13131d) padding-box,
+    linear-gradient(0.4turn, #f97794, #623aa2, #3800e1) border-box;
   border-radius: 30px;
 
   .btn {

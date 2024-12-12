@@ -4,7 +4,7 @@ const { setVectorStores } = useChatStore();
 const useVecStore = () => {
   const apiGetVecStoreList = async () => {
     await api.getVectorStoresListGetVectorStoresListGet().then((res) => {
-      setVectorStores(res.data.answer);
+      setVectorStores(res.data);
     });
   };
   const apiGetVecStoreFromFiles = async (
